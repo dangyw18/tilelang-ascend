@@ -743,7 +743,7 @@ def npuir_deinterleave(*args, channel_nums: int = 2, index_mode: str = "ALL_CHAN
  
     return _tir_call_intrin(channel_nums, index_mode, src, *dsts_arr)
 
-def npuir_sigmoid(src: tir.Buffer, dst: Optional[tir.Buffer] = None):
+def npuir_vsigmoid(src: tir.Buffer, dst: Optional[tir.Buffer] = None):
     """Apply sigmoid activation function element-wise on input buffer.
     
     Sigmoid(x) = 1 / (1 + exp(-x))
@@ -780,6 +780,36 @@ def npuir_sigmoid(src: tir.Buffer, dst: Optional[tir.Buffer] = None):
     T.evaluate(exp_call)
     T.evaluate(add_call)
     T.evaluate(rec_call)
+
+def npuir_sigmoid(src: tir.Buffer, dst: Optional[tir.Buffer] = None, size = []):
+    """Apply sigmoid activation function element-wise on input buffer.
+    
+    Sigmoid(x) = 1 / (1 + exp(-x))
+    
+    Args:
+        src (tir.Buffer): The input buffer
+        dst (tir.Buffer, optional): The output buffer. Defaults to None.
+    
+    Returns:
+        tir.Call: Handle to tl.npuir_sigmoid operation
+    """
+  
+    if dst is None:
+        dst = src
+
+    src_extent = _get_extent(src) if size == [] else size.copy()
+    dst_extent = _get_extent(dst) if size == [] else size.copy()
+
+    src_region = _to_region(src, "r", src_extent)
+    dst_region = _to_region(dst, "w", dst_extent)
+
+    return tir.call_intrin(
+        "handle",
+        tir.op.Op.get("tl.npuir_sigmoid"),
+        src_region,
+        dst_region
+    )
+
 
 def npuir_transpose(src, dst, permutation = Union[list, tuple], size=[]):
     """Permutes the dimensions of src according to the given permutation. In other words: dim(dst, i) = dim(src, permutation[i]).

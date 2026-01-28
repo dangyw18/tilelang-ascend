@@ -259,6 +259,21 @@ public:
   Array<Range> src_range, dst_range;
 };
 
+/// HIVM sigmoid operation
+/// Calculate the sigmoid value of one tensor
+class NpuirSigmoid : public Operator {
+ public:
+  NpuirSigmoid(Array<PrimExpr> args, BufferMap vmap);
+
+  static const Op& Get();
+
+  Buffer src;
+  Buffer dst;
+
+  Array<Range> src_range;
+  Array<Range> dst_range;
+};
+
 class NpuirCumsum : public Operator {
 public:
   NpuirCumsum(Array<PrimExpr> args, BufferMap vmap);

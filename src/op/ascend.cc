@@ -296,6 +296,25 @@ NpuirCumsum::NpuirCumsum(Array<PrimExpr> args, BufferMap vmap) {
   reverse = args[3].as<Bool>().value();
 }
 
+NpuirSigmoid::NpuirSigmoid(Array<PrimExpr> args, BufferMap vmap) {
+  ICHECK(args.size() == 2);
+  Array<Range> rgs[2];
+  Buffer bf[2];
+  for (int i = 0; i < 2; i++) {
+    auto expr = args[i];
+    auto call = expr.as<CallNode>();
+    ICHECK(call);
+    auto region = RegionOp(call->args, vmap);
+    rgs[i] = region.GetRanges();
+    bf[i] = region.GetBuffer();
+  }
+
+  this->src = bf[0];
+  this->dst = bf[1];
+  this->src_range = rgs[0];
+  this->dst_range = rgs[1];
+}
+
 NpuirAtomicAdd::NpuirAtomicAdd(Array<PrimExpr> args, BufferMap vmap) {
   Array<Range> rgs[2];
   Buffer bf[2];
@@ -588,6 +607,11 @@ TIR_REGISTER_TL_OP(NpuirReduce, npuir_reduce)
 
 TIR_REGISTER_TL_OP(NpuirCumsum, npuir_cumsum)
     .set_num_inputs(4)
+    .set_attr<TCallEffectKind>("TCallEffectKind",
+                               Integer(CallEffectKind::kOpaque));
+
+TIR_REGISTER_TL_OP(NpuirSigmoid, npuir_sigmoid)
+    .set_num_inputs(2)
     .set_attr<TCallEffectKind>("TCallEffectKind",
                                Integer(CallEffectKind::kOpaque));
 
